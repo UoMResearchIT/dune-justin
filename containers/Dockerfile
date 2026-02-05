@@ -71,10 +71,10 @@ RUN yum install -y ca_policy_igtf-classic
 RUN yum install -y cronie voms-clients-cpp
 COPY agents/justin-create-x509-proxies /etc/cron.daily/
 RUN mkdir -p /etc/grid-security/vomsdir/dune /etc/vomses
-RUN /bin/echo -e '/DC=org/DC=incommon/C=US/ST=Illinois/O=Fermi Research Alliance/CN=voms1.fnal.gov\n/C=US/O=Internet2/CN=InCommon RSA IGTF Server CA 3' >/etc/grid-security/vomsdir/dune/voms1.fnal.gov.lsc
-RUN /bin/echo -e '/DC=org/DC=incommon/C=US/ST=Illinois/O=Fermi Research Alliance/CN=voms2.fnal.gov\n/C=US/O=Internet2/CN=InCommon RSA IGTF Server CA 3' >/etc/grid-security/vomsdir/dune/voms2.fnal.gov.lsc
-RUN /bin/echo -e '"dune" "voms1.fnal.gov" "15042" "/DC=org/DC=incommon/C=US/ST=Illinois/O=Fermi Research Alliance/CN=voms1.fnal.gov" "dune"' >/etc/vomses/dune-voms1.fnal.gov
-RUN /bin/echo -e '"dune" "voms2.fnal.gov" "15042" "/DC=org/DC=incommon/C=US/ST=Illinois/O=Fermi Research Alliance/CN=voms1.fnal.gov" "dune"' >/etc/vomses/dune-voms2.fnal.gov
+RUN /bin/echo -e '/DC=org/DC=incommon/C=US/ST=Illinois/O=Fermi Forward Discovery Group, LLC/CN=voms1.fnal.gov\n/C=US/O=Internet2/CN=InCommon RSA IGTF Server CA 3' >/etc/grid-security/vomsdir/dune/voms1.fnal.gov.lsc
+RUN /bin/echo -e '/DC=org/DC=incommon/C=US/ST=Illinois/O=Fermi Forward Discovery Group, LLC/CN=voms2.fnal.gov\n/C=US/O=Internet2/CN=InCommon RSA IGTF Server CA 3' >/etc/grid-security/vomsdir/dune/voms2.fnal.gov.lsc
+RUN /bin/echo -e '"dune" "voms1.fnal.gov" "15042" "/DC=org/DC=incommon/C=US/ST=Illinois/O=Fermi Forward Discovery Group, LLC/CN=voms1.fnal.gov" "dune"' >/etc/vomses/dune-voms1.fnal.gov
+RUN /bin/echo -e '"dune" "voms2.fnal.gov" "15042" "/DC=org/DC=incommon/C=US/ST=Illinois/O=Fermi Forward Discovery Group, LLC/CN=voms2.fnal.gov" "dune"' >/etc/vomses/dune-voms2.fnal.gov
 
 # With HTCondor 10.x this pulls in condor itself and the voms clients
 RUN yum install -y python3-condor
@@ -109,6 +109,7 @@ RUN mkdir /usr/lib/python3.9/site-packages/justin
 COPY modules/__init__.py       /usr/lib/python3.9/site-packages/justin/
 COPY modules/justin_version.py /usr/lib/python3.9/site-packages/justin/
 COPY modules/events_list.py    /usr/lib/python3.9/site-packages/justin/
+COPY modules/components/      /usr/lib/python3.9/site-packages/justin/components/
 
 RUN mkdir -p /var/www/wsgi/ /var/www/html/docs/
 RUN mkdir -p /var/run/justin/last-updates/ 
