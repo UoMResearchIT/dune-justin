@@ -1,4 +1,27 @@
 from typing import Union
+from datetime import datetime as dt
+
+class DateSelector:
+    date_format = '%Y-%m-%d'
+    
+    def __init__(self, label_name: str, attr_name: str = None, date_value: str = None):
+        self.label_name = label_name
+        self.attr_name = attr_name if attr_name else label_name.lower().replace(" ", "_")
+        self.date_value = date_value if date_value else dt.now().strftime(self.__class__.date_format)
+    
+    def set_date(self, date_value: str) -> None:
+        try:
+            dt.strptime(date_value, self.__class__.date_format)
+            self.date_value = date_value
+        except Exception:
+            raise ValueError(f"Invalid date format for '{date_value}'. Expected format: {self.__class__.date_format}")
+
+    def render(self):
+        return  f"<label>{self.label_name}" \
+                    f"<input type='date' name='{self.attr_name}' value='{self.date_value}'>" \
+                f"</label>" \
+        
+
 
 class Option:
     default_value = "ANY"
@@ -40,7 +63,7 @@ class Select:
             option.is_selected = False
             
     def select_option(self, opt_val: str) -> Union[Option, None]:
-        self.reset()
+        self.reset() # single selection, so reset all options first
         for option in self.options:
             if str(option.value) == str(opt_val):
                 option.is_selected = True
