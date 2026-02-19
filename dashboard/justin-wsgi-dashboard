@@ -44,7 +44,7 @@ import markdown
 import metacat.webapi
 
 import justin
-from justin.components.filterForm import FilterForm, Label
+from justin.components.filterForm import FilterForm, Select, DateSelector, Option
 
 timeNow = None 
   
@@ -1152,20 +1152,15 @@ def listCampaigns(environ, user, cgiValues, pageNumber, pageLength):
       user_name_list.remove(logged_user_name)
       user_name_list = [logged_user_name] + user_name_list
 
-  created_list = sorted(unique_values["Created Day"], key=lambda s: dt.strptime(s, '%Y-%m-%d'), reverse=True)
+  fields = [
+    Select(options=user_name_list, label_name="User Name", name="user_name"),
+    Select(options=sorted(unique_values["Quota Name"]), label_name="Quota Name", name="quota_name"),
+    DateSelector(name="from_date", label_name="From Date"),
+    DateSelector(name="to_date", label_name="To Date"),
+  ]
 
-  data = {
-    "User Name": user_name_list,
-    "Quota Name": sorted(unique_values["Quota Name"]),
-    "From Date": created_list,
-    "To Date": created_list,
-  }
-
-  campaignFilterForm = FilterForm.create_from_dict(data=data, cgi_method='list-campaigns')
-  campaignFilterForm.set_filter('user_name', cgiValues.get("user_name"))
-  campaignFilterForm.set_filter('quota_name', cgiValues.get("quota_name"))
-  campaignFilterForm.set_filter('from_date', cgiValues.get("from_date"))
-  campaignFilterForm.set_filter('to_date',   cgiValues.get("to_date"))
+  campaignFilterForm = FilterForm(fields=fields, cgi_method='list-campaigns')
+  campaignFilterForm.update(cgiValues)
 
   output += campaignFilterForm.render()
   query = ('SELECT campaign_id,campaigns.description,'
