@@ -4088,24 +4088,22 @@ def listQuotas(environ, user, cgiValues, pageNumber, pageLength):
       filter_data['max_files_per_workflow'].add(str(r['max_files_per_workflow']))
 
   # finalise data: sort + keep only wanted columns
-  shown_columns = ['quota_name', 'processing_enabled', 'owner', 'condor_group_name', 'max_files_per_workflow']
+  
   filter_data = {k: sorted(list(v)) for k, v in filter_data.items()}
+  
+  fields = [
+      Select(label_name = "Quota", name = "quota_name", options = filter_data['quota_name']),
+      Select(label_name = "Processing enabled?", name = "processing_enabled", options = filter_data['processing_enabled']),
+      Select(label_name = "Owner", name = "owner", options = filter_data['owner']),
+      Select(label_name = "HTCondor Group", name = "condor_group_name", options = filter_data['condor_group_name']),
+      Select(label_name = "Max input files", name = "max_files_per_workflow", options = filter_data['max_files_per_workflow']),
+  ]
 
-  quotaFilterForm = FilterForm.create_from_dict(data=filter_data, cgi_method='list-quotas')
 
-  quotaFilterForm.rename_column('quota_name', 'quota_name', 'Quota')
-  quotaFilterForm.rename_column('processing_enabled', 'processing_enabled', 'Processing enabled?')
-  quotaFilterForm.rename_column('owner', 'owner', 'Owner')
-  quotaFilterForm.rename_column('condor_group_name', 'condor_group_name', 'HTCondor Group')
-  quotaFilterForm.rename_column('max_files_per_workflow', 'max_files_per_workflow', 'Max input files')
 
-  quotaFilterForm.set_filter('quota_name', cgiValues.get('quota_name'))
-  quotaFilterForm.set_filter('processing_enabled', cgiValues.get('processing_enabled'))
-  quotaFilterForm.set_filter('owner', cgiValues.get('owner'))
-  quotaFilterForm.set_filter('condor_group_name', cgiValues.get('condor_group_name'))
-  quotaFilterForm.set_filter('max_files_per_workflow', cgiValues.get('max_files_per_workflow'))
-
-  output += quotaFilterForm.render(col_order=shown_columns)
+  quotaFilterForm = FilterForm(fields=fields, cgi_method='list-quotas')
+  quotaFilterForm.update(cgiValues)
+  output += quotaFilterForm.render()
 
   # pager + table
   output += makePager(pageNumber, pageLength, len(quotaRows), urlTemplate)
