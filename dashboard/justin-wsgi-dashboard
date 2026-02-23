@@ -3834,36 +3834,30 @@ def listScopes(environ, user, cgiValues, pageNumber, pageLength):
   
   output += makePager(pageNumber, pageLength, len(scopeRows), urlTemplate)
   
-  filter_data = {}
-  for scope in scopes:
-    for key in scope:
-      if key not in filter_data:
-        filter_data[key] = set()
-      val = scope[key]
-      val = val.strip() if isinstance(val, str) else val
-      if val != '':
-        filter_data[key].add(val)
-  
-  shown_columns = ['scope_name', 'scope_condor_group_name', 'quota_name', 'processing_enabled', 'owner','max_files_per_workflow']
-  filter_data = {key: sorted(list(values)) for key, values in filter_data.items() if key in shown_columns}
-  
-  scopeFilterForm = FilterForm.create_from_dict(data=filter_data, cgi_method='list-scopes')
+  fields_values_dict: dict[str, set | list] = {}
+  show_fields_name = ['scope_name', 'scope_condor_group_name', 'quota_name', 'processing_enabled', 'owner', 'max_files_per_workflow']
+  for fn in show_fields_name:
+    for scope in scopes:
+      if fn not in fields_values_dict:
+        fields_values_dict[fn] = set()
+      val = scope[fn]
+      if val:
+        val = val.strip() if isinstance(val, str) else val
+        fields_values_dict[fn].add(val)
+    fields_values_dict[fn] = sorted(fields_values_dict[fn])
 
-  scopeFilterForm.rename_column(old_attr_name='scope_name', new_attr_name='scope_name', new_label_name='Scope name')
-  scopeFilterForm.rename_column(old_attr_name='scope_condor_group_name', new_attr_name='scope_condor_group_name', new_label_name='HTCondor Group')
-  scopeFilterForm.rename_column(old_attr_name='quota_name', new_attr_name='quota_name', new_label_name='Quota name')
-  scopeFilterForm.rename_column(old_attr_name='processing_enabled', new_attr_name='processing_enabled', new_label_name='Processing enabled?')
-  scopeFilterForm.rename_column(old_attr_name='owner', new_attr_name='owner', new_label_name='Owner')
-  scopeFilterForm.rename_column(old_attr_name='max_files_per_workflow', new_attr_name='max_files_per_workflow', new_label_name='Max input files')
-
-  scopeFilterForm.set_filter('scope_name', cgiValues.get("scope_name"))
-  scopeFilterForm.set_filter('quota_name', cgiValues.get("quota_name"))
-  scopeFilterForm.set_filter('processing_enabled', cgiValues.get("processing_enabled"))
-  scopeFilterForm.set_filter('owner', cgiValues.get("owner"))
-  scopeFilterForm.set_filter('scope_condor_group_name', cgiValues.get("scope_condor_group_name"))
-  scopeFilterForm.set_filter('max_files_per_workflow', cgiValues.get("max_files_per_workflow"))
+  fields = [
+      Select(label_name = "Scope name", name = "scope_name", options = fields_values_dict['scope_name']),
+      Select(label_name = "HTCondor Group", name = "scope_condor_group_name", options = fields_values_dict['scope_condor_group_name']),
+      Select(label_name = "Quota name", name = "quota_name", options = fields_values_dict['quota_name']),
+      Select(label_name = "Processing enabled?", name = "processing_enabled", options = fields_values_dict['processing_enabled']),
+      Select(label_name = "Owner", name = "owner", options = fields_values_dict['owner']),
+      Select(label_name = "Max input files", name = "max_files_per_workflow", options = fields_values_dict['max_files_per_workflow']),
+  ]
   
-  output += scopeFilterForm.render(col_order=shown_columns)
+  scopeFilterForm = FilterForm(fields=fields, cgi_method='list-scopes')
+  scopeFilterForm.update(cgiValues)
+  output += scopeFilterForm.render()
   output += ('<table class="center">')
   
   output += ('<tr>'
