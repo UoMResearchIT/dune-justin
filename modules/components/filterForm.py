@@ -1,4 +1,3 @@
-from typing import Union
 from datetime import datetime as dt
 from abc import ABC, abstractmethod
 
@@ -32,20 +31,11 @@ class Label:
 class Option:
     default_value = "ANY"
     
-    def __init__(self, value, is_selected: bool = False):
+    def __init__(self, value : list[str], is_selected: bool = False):
         self.value = value
         self.is_selected = is_selected
-    
-    @property
-    def value(self) -> str:
-        return self._value
-    
-    @value.setter
-    def value(self, new_value):
-        self._value = new_value
-    
+
     def render(self):
-        
         if self.is_selected:
             option_html = f"<option value='{self.value}' selected>{self.value}</option>"
         else:
@@ -120,17 +110,12 @@ class Select(FormField):
             option.is_selected = False
         self._value = None
 
-    def rename(self, new_label_name: str, new_name: str):
-        self.label_name = new_label_name
-        self.name = new_name
-
     def render(self):
         select_html = f"<select name='{self.name}'>"
         for option in self.options:
             select_html += option.render()
         select_html += "</select>"
         return select_html
-
 
 class FilterForm:
     def __init__(self, fields: list[FormField], cgi_method:str , action: str = "/dashboard/", request_method: str = "GET"):
@@ -148,7 +133,7 @@ class FilterForm:
         return { field.name : field for field in self._fields }
 
     def update(self, field_values: dict[str, str], is_ignore_unknown_fields: bool = True):
-        '''Bulk update field values from dict-like object.'''
+        '''Bulk update field values from a dict, e.g. cgi value'''
         for field_name, field_value in field_values.items():
             try:
                 self[field_name] = field_value
@@ -158,8 +143,12 @@ class FilterForm:
                     
     
     def __setitem__(self, field_name: str, field_value: str):
-        f = self.get_field(field_name)
-        f.value = field_value
+        for i, f in enumerate(self.fields):
+            if f.name == field_name:
+                f.value = field_value
+                self._fields[i] = f
+                return
+        raise KeyError(f"Field with name '{field_name}' not found in FilterForm.")
 
     def __getitem__(self, field_name: str) -> str:
         return self.get_field(field_name).value
