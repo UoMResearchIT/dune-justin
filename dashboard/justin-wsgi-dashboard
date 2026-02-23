@@ -44,7 +44,7 @@ import markdown
 import metacat.webapi
 
 import justin
-from justin.components.filterForm import FilterForm, Label
+from justin.components.filterForm import FilterForm, Select, DateSelector
 
 timeNow = None 
   
@@ -1152,20 +1152,15 @@ def listCampaigns(environ, user, cgiValues, pageNumber, pageLength):
       user_name_list.remove(logged_user_name)
       user_name_list = [logged_user_name] + user_name_list
 
-  created_list = sorted(unique_values["Created Day"], key=lambda s: dt.strptime(s, '%Y-%m-%d'), reverse=True)
+  fields = [
+    Select(options=user_name_list, label_name="User Name", name="user_name"),
+    Select(options=sorted(unique_values["Quota Name"]), label_name="Quota Name", name="quota_name"),
+    DateSelector(name="from_date", label_name="From Date"),
+    DateSelector(name="to_date", label_name="To Date"),
+  ]
 
-  data = {
-    "User Name": user_name_list,
-    "Quota Name": sorted(unique_values["Quota Name"]),
-    "From Date": created_list,
-    "To Date": created_list,
-  }
-
-  campaignFilterForm = FilterForm.create_from_dict(data=data, cgi_method='list-campaigns')
-  campaignFilterForm.set_filter('user_name', cgiValues.get("user_name"))
-  campaignFilterForm.set_filter('quota_name', cgiValues.get("quota_name"))
-  campaignFilterForm.set_filter('from_date', cgiValues.get("from_date"))
-  campaignFilterForm.set_filter('to_date',   cgiValues.get("to_date"))
+  campaignFilterForm = FilterForm(fields=fields, cgi_method='list-campaigns')
+  campaignFilterForm.update(cgiValues)
 
   output += campaignFilterForm.render()
   query = ('SELECT campaign_id,campaigns.description,'
@@ -3559,8 +3554,7 @@ def listJobs(environ, user, cgiValues, pageNumber, pageLength):
 
   justin.cur.execute(full_query)
   fullRows = justin.cur.fetchall()
-
-  # Collect all unique values in a single pass through fullRows
+  
   unique_values = {
     "Workflow ID": set(),
     "Stage ID": set(),
@@ -3581,7 +3575,7 @@ def listJobs(environ, user, cgiValues, pageNumber, pageLength):
     if row.get('job_state'):
         unique_values["Job State"].add(row['job_state'])
     if row.get('site_name'):
-        unique_values["Site Name"].add(row['site_name']) # there is None in site_name, so convert to string to avoid error when adding to set
+        unique_values["Site Name"].add(row['site_name'])
     if row.get('entry_name'):
         unique_values["Entry Name"].add(row['entry_name'])
     if row.get('submitted_time'):
@@ -3590,6 +3584,7 @@ def listJobs(environ, user, cgiValues, pageNumber, pageLength):
   
   # Convert and sort
   user_name_list = sorted(unique_values["User Name"])
+  
   if user: # logged in user first in the list
     logged_user_name = user.get('user_name')
     if logged_user_name in user_name_list:
@@ -3598,30 +3593,19 @@ def listJobs(environ, user, cgiValues, pageNumber, pageLength):
 
   submitted_time_list = sorted(unique_values["Submitted Time"],  key=lambda s: dt.strptime(s, '%Y-%m-%d'), reverse=True)
   
-  data = {
-      "User Name":  user_name_list,
-      "Workflow ID":  sorted(unique_values["Workflow ID"]),
-      "Stage ID":     sorted(unique_values["Stage ID"]),
-      "Job State":    sorted(unique_values["Job State"]),
-      "Site Name":    sorted(unique_values["Site Name"]),
-      "Entry Name":   sorted(unique_values["Entry Name"]),
-      "Submitted Time": submitted_time_list
-    }
-
-  jobFilterForm = FilterForm.create_from_dict(data=data, cgi_method='list-jobs')
-  jobFilterForm.set_filter('user_name', cgiValues.get("user_name"))
-  jobFilterForm.set_filter('workflow_id', cgiValues.get("workflow_id"))
-  jobFilterForm.set_filter('stage_id', cgiValues.get("stage_id"))
-  jobFilterForm.set_filter('job_state', cgiValues.get("job_state"))
-  jobFilterForm.set_filter('site_name', cgiValues.get("site_name"))
-  jobFilterForm.set_filter('entry_name', cgiValues.get("entry_name"))
-  jobFilterForm.set_filter('submitted_time', cgiValues.get("submitted_time"))
-
-  # output += "<hr>"
-  # output += "<h1>DEBUG</h1>"
-  # output += "<h2>%s</h2>" % sql_where_clause if sql_where_clause else "No where clause"
-  # output += f"<h2>{cgiValues}</h2>"
-  # output += "<hr>"
+  fields = [
+    Select(label_name = "User Name", name = "user_name", options = user_name_list),
+    Select(label_name = "Workflow ID", name = "workflow_id", options = sorted(unique_values["Workflow ID"])),
+    Select(label_name = "Stage ID", name = "stage_id", options = sorted(unique_values["Stage ID"])),
+    Select(label_name = "Job State", name = "job_state", options = sorted(unique_values["Job State"])),
+    Select(label_name = "Site Name", name = "site_name", options = sorted(unique_values["Site Name"])),
+    Select(label_name = "Entry Name", name = "entry_name", options = sorted(unique_values["Entry Name"])),
+    Select(label_name = "Submitted Time", name = "submitted_time", options = submitted_time_list)
+  ] 
+  
+  jobFilterForm = FilterForm(fields=fields, cgi_method='list-jobs')
+  jobFilterForm.update(cgiValues)
+  
   output += jobFilterForm.render()
   
   output += makePager(pageNumber, pageLength, len(jobRows), urlTemplate)
@@ -3850,36 +3834,30 @@ def listScopes(environ, user, cgiValues, pageNumber, pageLength):
   
   output += makePager(pageNumber, pageLength, len(scopeRows), urlTemplate)
   
-  filter_data = {}
-  for scope in scopes:
-    for key in scope:
-      if key not in filter_data:
-        filter_data[key] = set()
-      val = scope[key]
-      val = val.strip() if isinstance(val, str) else val
-      if val != '':
-        filter_data[key].add(val)
-  
-  shown_columns = ['scope_name', 'scope_condor_group_name', 'quota_name', 'processing_enabled', 'owner','max_files_per_workflow']
-  filter_data = {key: sorted(list(values)) for key, values in filter_data.items() if key in shown_columns}
-  
-  scopeFilterForm = FilterForm.create_from_dict(data=filter_data, cgi_method='list-scopes')
+  fields_values_dict: dict[str, set | list] = {}
+  show_fields_name = ['scope_name', 'scope_condor_group_name', 'quota_name', 'processing_enabled', 'owner', 'max_files_per_workflow']
+  for fn in show_fields_name:
+    for scope in scopes:
+      if fn not in fields_values_dict:
+        fields_values_dict[fn] = set()
+      val = scope[fn]
+      if val:
+        val = val.strip() if isinstance(val, str) else val
+        fields_values_dict[fn].add(val)
+    fields_values_dict[fn] = sorted(fields_values_dict[fn])
 
-  scopeFilterForm.rename_column(old_attr_name='scope_name', new_attr_name='scope_name', new_label_name='Scope name')
-  scopeFilterForm.rename_column(old_attr_name='scope_condor_group_name', new_attr_name='scope_condor_group_name', new_label_name='HTCondor Group')
-  scopeFilterForm.rename_column(old_attr_name='quota_name', new_attr_name='quota_name', new_label_name='Quota name')
-  scopeFilterForm.rename_column(old_attr_name='processing_enabled', new_attr_name='processing_enabled', new_label_name='Processing enabled?')
-  scopeFilterForm.rename_column(old_attr_name='owner', new_attr_name='owner', new_label_name='Owner')
-  scopeFilterForm.rename_column(old_attr_name='max_files_per_workflow', new_attr_name='max_files_per_workflow', new_label_name='Max input files')
-
-  scopeFilterForm.set_filter('scope_name', cgiValues.get("scope_name"))
-  scopeFilterForm.set_filter('quota_name', cgiValues.get("quota_name"))
-  scopeFilterForm.set_filter('processing_enabled', cgiValues.get("processing_enabled"))
-  scopeFilterForm.set_filter('owner', cgiValues.get("owner"))
-  scopeFilterForm.set_filter('scope_condor_group_name', cgiValues.get("scope_condor_group_name"))
-  scopeFilterForm.set_filter('max_files_per_workflow', cgiValues.get("max_files_per_workflow"))
+  fields = [
+      Select(label_name = "Scope name", name = "scope_name", options = fields_values_dict['scope_name']),
+      Select(label_name = "HTCondor Group", name = "scope_condor_group_name", options = fields_values_dict['scope_condor_group_name']),
+      Select(label_name = "Quota name", name = "quota_name", options = fields_values_dict['quota_name']),
+      Select(label_name = "Processing enabled?", name = "processing_enabled", options = fields_values_dict['processing_enabled']),
+      Select(label_name = "Owner", name = "owner", options = fields_values_dict['owner']),
+      Select(label_name = "Max input files", name = "max_files_per_workflow", options = fields_values_dict['max_files_per_workflow']),
+  ]
   
-  output += scopeFilterForm.render(col_order=shown_columns)
+  scopeFilterForm = FilterForm(fields=fields, cgi_method='list-scopes')
+  scopeFilterForm.update(cgiValues)
+  output += scopeFilterForm.render()
   output += ('<table class="center">')
   
   output += ('<tr>'
@@ -4110,24 +4088,22 @@ def listQuotas(environ, user, cgiValues, pageNumber, pageLength):
       filter_data['max_files_per_workflow'].add(str(r['max_files_per_workflow']))
 
   # finalise data: sort + keep only wanted columns
-  shown_columns = ['quota_name', 'processing_enabled', 'owner', 'condor_group_name', 'max_files_per_workflow']
+  
   filter_data = {k: sorted(list(v)) for k, v in filter_data.items()}
+  
+  fields = [
+      Select(label_name = "Quota", name = "quota_name", options = filter_data['quota_name']),
+      Select(label_name = "Processing enabled?", name = "processing_enabled", options = filter_data['processing_enabled']),
+      Select(label_name = "Owner", name = "owner", options = filter_data['owner']),
+      Select(label_name = "HTCondor Group", name = "condor_group_name", options = filter_data['condor_group_name']),
+      Select(label_name = "Max input files", name = "max_files_per_workflow", options = filter_data['max_files_per_workflow']),
+  ]
 
-  quotaFilterForm = FilterForm.create_from_dict(data=filter_data, cgi_method='list-quotas')
 
-  quotaFilterForm.rename_column('quota_name', 'quota_name', 'Quota')
-  quotaFilterForm.rename_column('processing_enabled', 'processing_enabled', 'Processing enabled?')
-  quotaFilterForm.rename_column('owner', 'owner', 'Owner')
-  quotaFilterForm.rename_column('condor_group_name', 'condor_group_name', 'HTCondor Group')
-  quotaFilterForm.rename_column('max_files_per_workflow', 'max_files_per_workflow', 'Max input files')
 
-  quotaFilterForm.set_filter('quota_name', cgiValues.get('quota_name'))
-  quotaFilterForm.set_filter('processing_enabled', cgiValues.get('processing_enabled'))
-  quotaFilterForm.set_filter('owner', cgiValues.get('owner'))
-  quotaFilterForm.set_filter('condor_group_name', cgiValues.get('condor_group_name'))
-  quotaFilterForm.set_filter('max_files_per_workflow', cgiValues.get('max_files_per_workflow'))
-
-  output += quotaFilterForm.render(col_order=shown_columns)
+  quotaFilterForm = FilterForm(fields=fields, cgi_method='list-quotas')
+  quotaFilterForm.update(cgiValues)
+  output += quotaFilterForm.render()
 
   # pager + table
   output += makePager(pageNumber, pageLength, len(quotaRows), urlTemplate)
