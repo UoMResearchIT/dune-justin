@@ -4372,25 +4372,45 @@ def showQuota(environ, user, cgiValues):
   return output
 
 def listSites(environ, user, cgiValues):
-      
+
+  field_values = utils.parse_cgi_value(cgiValues, ['country_code'])
+  country_code = field_values.get('country_code')
+  filter_item_str = ['sites.site_id > 0']
+  
+  if country_code and country_code != "ANY":
+    filter_item_str.append("site_name LIKE '%s%%'" % country_code)
+
+  sql_where_clause = " AND ".join(filter_item_str)
+
+  query = (
+    "SELECT DATE(last_osg_seen_time) AS osg_date,"
+    "last_get_jobscript_time,"
+    "site_name,sites.enabled,"
+    "wlcg_site_name,always_inner_apptainer "
+    "FROM sites "
+    f"WHERE {sql_where_clause} "
+    "ORDER BY site_name"
+  )
+
+  
   output = header(environ, user, "justIN: Sites")
-
-  output += ("<h1>Sites</h1>")
-
+  output += "<h1>Sites</h1>"
   output += ('<p>Or list <a href="/dashboard/?method=list-entries">all '
              'entries</a>.</p>')
-  
-  query = ("SELECT DATE(last_osg_seen_time) AS osg_date,"
-           "last_get_jobscript_time,"
-           "site_name,sites.enabled,"
-           "wlcg_site_name,always_inner_apptainer "
-           "FROM sites "
-           "WHERE sites.site_id > 0 ORDER BY site_name")
   justin.cur.execute(query)
   siteRows = justin.cur.fetchall()
 
+  country_codes = sorted(justin.rseCountriesRegions.keys())
+  country_codes = sorted(set(row['site_name'].split('_')[0] for row in siteRows))
+
+  fields = [
+    Select(label_name="Country Code", name="country_code", options=country_codes),
+  ]
+
+  filterForm = FilterForm(fields=fields, cgi_method='list-sites')
+  filterForm.update(cgiValues)
+  output += filterForm.render()
   output += ('<table class="center">')
-  
   output += ('<tr>'
         '<th>Site name</th>'
         '<th>Enabled?</th>'
