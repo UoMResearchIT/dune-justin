@@ -22,6 +22,8 @@ def extract_rows_unique_value(rows: list[dict]) -> dict[str, list]:
     return {k: sorted([x for x in v if x is not None]) for k, v in unique_values.items()}
 
 def parse_cgi_value(cgiValues:dict[str, str], keys: list[str], default_value = Option.default_value) -> dict[str, str]:
+  if not isinstance(cgiValues, dict):   raise ValueError("Expected a dictionary for cgiValues")
+  if not isinstance(keys, list):        raise ValueError("Expected a list for keys")
   result = {}
 
   for key in keys:
