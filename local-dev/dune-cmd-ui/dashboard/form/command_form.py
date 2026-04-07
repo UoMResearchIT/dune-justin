@@ -90,7 +90,7 @@ class CommandForm:
     
 
     def render_submit_button(self):
-        return "<input type='submit' value='Filter' style='background: #E1703D; border-radius: 5px; padding: 5px; color: white; font-weight: bold; font-size: 1em; border: 0; cursor: pointer'>"
+        return "<input type='submit' value='Submit' style='background: #E1703D; border-radius: 5px; padding: 5px; color: white; font-weight: bold; font-size: 1em; border: 0; cursor: pointer'>"
 
     def render(self) -> str:
 

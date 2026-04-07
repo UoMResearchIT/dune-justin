@@ -22,11 +22,13 @@ class Option:
 
 
 class Select(FieldBase):
-    def __init__(self, name: str, label_name: str, options: list[str], value=None):
+    def __init__(self, name: str, label_name: str, options: list[str], value=None, default_value = None):
+        if default_value and default_value not in options:
+            raise ValueError(f"default_value '{default_value}' must be in options {options}")
         super().__init__(name=name, val=None)
         self.label_name = label_name
         options = [Option(value=o, is_selected=False) for o in options]
-        default_option = Option(value=Option.default_value, is_selected=False)
+        default_option = Option(value=default_value if default_value else Option.default_value, is_selected=False)
         self._options = [default_option] + options
         self.reset()
 
