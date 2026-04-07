@@ -85,7 +85,7 @@ class CommandForm:
                     return
             raise KeyError(f"Field with name '{field.name}' not found in FilterForm.")
     
-    def as_fieldset(self)  -> List[FieldSet]:
+    def as_fieldset(self)  -> list[FieldSet]:
         pass
     
 
