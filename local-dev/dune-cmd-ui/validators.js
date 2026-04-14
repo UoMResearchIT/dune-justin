@@ -28,6 +28,11 @@ const validators = {
     return /^\d+$/.test(value) || "Digits only";
   },
 
+  alphanum: value => {
+    if (value.trim() === "") return true;
+    return /^[a-zA-Z0-9]+$/.test(value) || "Alphanumeric characters only";
+  },
+  
   min: (value, min) => {
     if (value.trim() === "") return true;
     const v = Number(value);
