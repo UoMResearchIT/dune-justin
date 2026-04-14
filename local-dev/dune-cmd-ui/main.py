@@ -4,6 +4,7 @@ from dashboard.fields.select import Select
 from dashboard.fields.date_selector import DateSelector
 from dashboard.fields.text_field import TextField
 from dashboard.fields.checkbox import Checkbox
+from dashboard.fields.radio import RadioGroup, Radio
 
 
 def output_html(
@@ -48,6 +49,22 @@ def main():
                         placeholder=" 5 <= x <= 10",
                         validators=["required number min:5 max:10"],
                         
+                    ),
+                    RadioGroup(
+                        name="radio1",
+                        options=[
+                            {"value": "html", "label": "HTML", "id": "html"},
+                            {"value": "javascript", "label": "JavaScript", "id": "javascript"},
+                            {"value": "css", "label": "CSS", "id": "css"},
+                        ],
+                        value="css",
+                    ),
+                    Radio(
+                        name="radio2",
+                        value="python",
+                        label_name="Python",
+                        id="python",
+                        checked=True,
                     ),
                     Checkbox(
                         name="checkbox1",
