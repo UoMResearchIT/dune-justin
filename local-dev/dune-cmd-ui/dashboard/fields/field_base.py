@@ -8,12 +8,13 @@ class HtmlElement(ABC):
 
 class FieldBase(HtmlElement):
     def __init__(
-        self, name: str, val: str = None, id: str = None, validators: list[str] = None
+        self, name: str, val: str = None, id: str = None, validators: list[str] = None, conditional_display: list[str] = None,
     ):
         self.name = name
         self._value = val
         self._id = id
         self.validators = validators
+        self.conditional_display = conditional_display
 
     @property
     @abstractmethod
@@ -37,4 +38,10 @@ class FieldBase(HtmlElement):
     def validator_js(self) -> str:
         if not self.validators: return None
         args = " ".join((self.validators))
+        return args
+
+    @property
+    def conditional_display_js(self) -> str:
+        if not self.conditional_display: return None
+        args = " ".join((self.conditional_display))
         return args
