@@ -6395,6 +6395,17 @@ def postHandlers(startResponse, environ, user):
                             ])
   return output
 
+def cmdlineUI(environ, user, cgiValues):
+  
+  output = header(environ, user, "justIN: Command Line Interface")
+
+  output += '<div class="center">\n'
+  output += '<p>justIN command line interface is not implemented yet.</p>\n'
+  output += '</div>\n'
+
+  output += footer()
+  return output
+
 #
 # Entry point from mod_wsgi
 #
@@ -6563,6 +6574,9 @@ def application(environ, startResponse):
 
   elif method == "awt-results":
     output = awtResults(environ, user, cgiValues)
+  
+  elif method == "cmdline-ui":
+    output = cmdlineUI(environ, user, cgiValues)
   
   else:
     output = 'Method not recognised: %s' % str(method)
