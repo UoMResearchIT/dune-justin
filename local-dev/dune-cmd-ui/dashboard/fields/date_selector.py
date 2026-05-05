@@ -6,9 +6,9 @@ from .util.label import Label
 class DateSelector(FieldBase):
     date_format = "%Y-%m-%d"
 
-    def __init__(self, name: str, label_name: str, value: str = None):
+    def __init__(self, name: str, label_name: str, value: str = None, conditional_display: list[str] | None = None):
         super().__init__(
-            name, value if value else dt.today().strftime(self.date_format)
+            name, value if value else dt.today().strftime(self.date_format), conditional_display = conditional_display
         )
         self.label_name = label_name if label_name else name.replace("_", " ")
 
@@ -29,7 +29,10 @@ class DateSelector(FieldBase):
             )
 
     def _render(self):
-        data_selector_html = f"<input class='date-selector'type='date' id='{self.id}' name='{self.name}' value='{self.value}' id='datepicker'>"
+        if self.conditional_display:
+            data_selector_html = f"<input class='date-selector'type='date' id='{self.id}' name='{self.name}' value='{self.value}' id='datepicker' data-display='{self.conditional_display_js}'>"
+        else:
+            data_selector_html = f"<input class='date-selector'type='date' id='{self.id}' name='{self.name}' value='{self.value}' id='datepicker'>"
         return data_selector_html
 
     def render(self):
