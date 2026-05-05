@@ -8,9 +8,10 @@ class Radio(FieldBase):
         value: str, 
         label_name: str, 
         id: str = None, 
-        checked: bool = False
+        checked: bool = False,
+        conditional_display: list[str] | None = None
     ):
-        super().__init__(name=name, val=value, id=id)
+        super().__init__(name=name, val=value, id=id, conditional_display=conditional_display)
         self.label_name = label_name
         self.checked = checked
 
@@ -27,7 +28,14 @@ class Radio(FieldBase):
 
     def _render(self):
         checked_attr = " checked" if self.checked else ""
-        return f"<input type='radio' id='{self.id}' name='{self.name}' value='{self.value}' {checked_attr}>"
+        
+        if self.conditional_display:
+            radio_html = f"<input type='radio' id='{self.id}' name='{self.name}' value='{self.value}' {checked_attr} data-display='{self.conditional_display_js}'>"
+        else:
+            radio_html = f"<input type='radio' id='{self.id}' name='{self.name}' value='{self.value}' {checked_attr}>"
+        
+        return radio_html
+        
 
     def render(self):
         return Label(target=self, is_target_after_label=True).render()
@@ -40,6 +48,7 @@ class RadioGroup(FieldBase):
         options: list[dict[str, str]],
         value: str | None = None,
         validators: list[str] | None = None,
+        conditional_display: list[str] | None = None,
     ):
         super().__init__(name=name)
         self.validators = validators
@@ -49,7 +58,8 @@ class RadioGroup(FieldBase):
                 value=opt['value'],
                 label_name=opt['label'],
                 id=opt['id'],
-                checked=(opt['value'] == value)
+                checked=(opt['value'] == value),
+                conditional_display=conditional_display
             )
             for opt in options
         ]
