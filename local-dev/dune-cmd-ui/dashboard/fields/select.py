@@ -22,10 +22,10 @@ class Option:
 
 
 class Select(FieldBase):
-    def __init__(self, name: str, label_name: str, options: list[str], value=None, default_value = None):
+    def __init__(self, name: str, label_name: str, options: list[str], value=None, default_value = None, conditional_display: list[str] | None = None):
         if default_value and default_value not in options:
             raise ValueError(f"default_value '{default_value}' must be in options {options}")
-        super().__init__(name=name, val=None)
+        super().__init__(name=name, val=None, conditional_display=conditional_display)
         self.label_name = label_name
         options = [Option(value=o, is_selected=False) for o in options]
         default_option = Option(value=default_value if default_value else Option.default_value, is_selected=False)
@@ -65,7 +65,10 @@ class Select(FieldBase):
         self._value = None
 
     def _render(self):
-        select_html = f"<select name='{self.name}' id='{self.id}'>"
+        if self.conditional_display:
+            select_html = f"<select name='{self.name}' id='{self.id}' data-display='{self.conditional_display_js}'>"
+        else:
+            select_html = f"<select name='{self.name}' id='{self.id}'>"
         for option in self.options:
             select_html += option.render()
         select_html += "</select>"
