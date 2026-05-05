@@ -11,10 +11,12 @@ class Checkbox(FieldBase):
         id: str | None = None,
         validators: list[str] | None = None,
         is_checked: bool = False,
+        conditional_display: list[str] | None = None,
     ):
         super().__init__(name=name, val=value, id=id, validators=validators)
         self.label_name = label_name
         self.is_checked = is_checked
+        self.conditional_display = conditional_display
 
     @property
     def value(self) -> bool:
@@ -30,10 +32,12 @@ class Checkbox(FieldBase):
     def _render(self):
         validator_attr = f"onchange='{self.validator_js}'" if self.validators else ""
         checked_attr = "checked" if self.is_checked else ""
+        conditional_display_js = f"data-display='{self.conditional_display_js}'" if self.conditional_display else ""
         checkbox_html = (
             f"<input type='checkbox' id='{self.id}' name='{self.name}' value='{self.value}' "
             f"{checked_attr} "
             f"{validator_attr} "
+            f"{conditional_display_js} "
             f">"
             )
         return checkbox_html
