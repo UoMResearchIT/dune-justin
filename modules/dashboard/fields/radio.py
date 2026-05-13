@@ -9,7 +9,7 @@ class Radio(FieldBase):
         label_name: str, 
         id: str = None, 
         checked: bool = False,
-        conditional_display: list[str] | None = None
+        conditional_display: list[str] = None
     ):
         super().__init__(name=name, val=value, id=id, conditional_display=conditional_display)
         self.label_name = label_name
@@ -46,9 +46,9 @@ class RadioGroup(FieldBase):
         self,
         name: str,
         options: list[dict[str, str]],
-        value: str | None = None,
-        validators: list[str] | None = None,
-        conditional_display: list[str] | None = None,
+        value: str = None,
+        validators: list[str] = None,
+        conditional_display: list[str] = None,
     ):
         super().__init__(name=name)
         self.validators = validators

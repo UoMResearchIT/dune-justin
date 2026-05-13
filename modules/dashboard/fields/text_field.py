@@ -7,11 +7,11 @@ class TextField(FieldBase):
         self,
         name: str,
         label_name: str,
-        value: str | None = None,
+        value: str = None,
         placeholder: str = "",
-        id: str | None = None,
-        validators: list[str] | None = None,
-        conditional_display: list[str] | None = None,
+        id: str = None,
+        validators: list[str] = None,
+        conditional_display: list[str] = None,
     ):
         super().__init__(name=name, val=value if value is not None else "", id=id, validators=validators, conditional_display=conditional_display)
         self.label_name = label_name
@@ -23,7 +23,7 @@ class TextField(FieldBase):
         return self._value
 
     @value.setter
-    def value(self, val: str | None):
+    def value(self, val: str = None):
         self._value = "" if val is None else str(val)
 
     def _render(self):

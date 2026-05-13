@@ -1,4 +1,4 @@
-from dashboard.fields.field_base import HtmlElement
+from ..field_base import HtmlElement
 class Div(HtmlElement):
     def __init__(self, content):
         self.content = content

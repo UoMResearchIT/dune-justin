@@ -8,10 +8,10 @@ class Checkbox(FieldBase):
         name: str,
         label_name: str,
         value = str,
-        id: str | None = None,
-        validators: list[str] | None = None,
+        id: str = None,
+        validators: list[str] = None,
         is_checked: bool = False,
-        conditional_display: list[str] | None = None,
+        conditional_display: list[str] = None,
     ):
         super().__init__(name=name, val=value, id=id, validators=validators)
         self.label_name = label_name
@@ -23,7 +23,7 @@ class Checkbox(FieldBase):
         return self._value
     
     @value.setter
-    def value(self, val: str | None):
+    def value(self, val: str = None):
         self._value = val
     
     def reset(self):

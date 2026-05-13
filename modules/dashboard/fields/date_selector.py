@@ -6,7 +6,7 @@ from .util.label import Label
 class DateSelector(FieldBase):
     date_format = "%Y-%m-%d"
 
-    def __init__(self, name: str, label_name: str, value: str = None, conditional_display: list[str] | None = None):
+    def __init__(self, name: str, label_name: str, value: str = None, conditional_display: list[str] = None):
         super().__init__(
             name, value if value else dt.today().strftime(self.date_format), conditional_display = conditional_display
         )

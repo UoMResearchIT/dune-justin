@@ -22,7 +22,7 @@ class Option:
 
 
 class Select(FieldBase):
-    def __init__(self, name: str, label_name: str, options: list[str], value=None, default_value = None, conditional_display: list[str] | None = None):
+    def __init__(self, name: str, label_name: str, options: list[str], value=None, default_value = None, conditional_display: list[str] = None):
         if default_value and default_value not in options:
             raise ValueError(f"default_value '{default_value}' must be in options {options}")
         super().__init__(name=name, val=None, conditional_display=conditional_display)

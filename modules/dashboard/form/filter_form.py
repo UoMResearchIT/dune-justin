@@ -1,4 +1,4 @@
-from dashboard.fields.field_base import FieldBase, HtmlElement
+from ..fields.field_base import FieldBase, HtmlElement
 
 class FilterForm:
     def __init__(
