@@ -45,8 +45,10 @@ import metacat.webapi
 
 import justin
 
-from justin.dashboard.components.filterForm import FilterForm, Select, DateSelector
 import justin.dashboard.utils as utils
+from justin.dashboard.form.filter_form import FilterForm
+from justin.dashboard.fields.select import Select
+from justin.dashboard.fields.date_selector import DateSelector
 
 timeNow = None 
   
@@ -3902,7 +3904,7 @@ def listScopes(environ, user, cgiValues, pageNumber, pageLength):
                        str(scopeRow['max_files_per_workflow']) })
 
   
-  fields_values_dict: dict[str, set | list] = {}
+  fields_values_dict: dict = {}
   show_fields_name = ['scope_name', 'scope_condor_group_name', 'quota_name', 'processing_enabled', 'owner', 'max_files_per_workflow']
   for fn in show_fields_name:
     for scope in scopes:
@@ -6946,6 +6948,17 @@ def postHandlers(startResponse, environ, user):
                             ])
   return output
 
+def cmdlineUI(environ, user, cgiValues):
+  
+  output = header(environ, user, "justIN: Command Line Interface")
+
+  output += '<div class="center">\n'
+  output += '<p>justIN command line interface is not implemented yet.</p>\n'
+  output += '</div>\n'
+
+  output += footer()
+  return output
+
 #
 # Entry point from mod_wsgi
 #
@@ -7120,6 +7133,9 @@ def application(environ, startResponse):
 
   elif method == "awt-results":
     output = awtResults(environ, user, cgiValues)
+  
+  elif method == "cmdline-ui":
+    output = cmdlineUI(environ, user, cgiValues)
   
   else:
     output = 'Method not recognised: %s' % str(method)
