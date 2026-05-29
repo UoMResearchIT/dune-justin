@@ -9,10 +9,12 @@ class CommandForm:
         self,
         fields: list[FieldBase],
         cgi_method: str,
+        form_title: str = "Command Form",
         action: str = "/dashboard/",
         request_method: str = "GET",
     ):
         self._fields: list[FieldBase] = fields
+        self.form_title: str = form_title
         self.action: str = action
         self.cgi_method: str = cgi_method
         self.request_method: str = request_method
@@ -94,7 +96,7 @@ class CommandForm:
 
     def render(self) -> str:
 
-        form_html = "<h1>Command Form</h1>"
+        form_html = f"<h1>{self.form_title}</h1>"
         form_html += f"<form action='{self.action}' method='{self.request_method}', style='{self.css_style}'>"
         form_html += f"<input type='hidden' name='method' value='{self.cgi_method}'>"
 
