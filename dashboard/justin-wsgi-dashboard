@@ -1123,7 +1123,69 @@ to visit.</p>
   
   return output
 
+
+def _getUserScope(jsonDict, user):
+  # TODO: need to find out the user scope instead of filter by the given scope. 
+  # need access to db to check the schema
+  if 'scope' in jsonDict and jsonDict['scope']:
+    scopeName = jsonDict['scope'].lower()
+  else:
+    scopeName = justin.defaultScopeName
+
+  if not justin.stringIsScope(scopeName):
+      return ('400 Bad Request', 
+              'Scope name can only be characters a-z 0-9 - _ .')
+
+  try:
+      scopeRow = justin.select('SELECT scope_id,wlcg_group_name,quota_name,'
+                    'principal_name,scopes.quota_id '
+                    'FROM scopes '
+                    'LEFT JOIN named_quotas '
+                    'ON named_quotas.quota_id=scopes.quota_id '
+                    'LEFT JOIN users '
+                    'ON users.user_id=named_quotas.user_id '
+                    'LEFT JOIN principal_names '
+                    'ON principal_names.pn_id=users.main_pn_id '
+                    'LEFT JOIN wlcg_groups '
+                    'ON wlcg_groups.wlcg_group_id=named_quotas.wlcg_group_id '
+                    'WHERE scope_name="%s"' % scopeName, 
+                    justOne=True)
+
+      scopeQuotaID   = int(scopeRow['quota_id'])
+      quotaName      = scopeRow['quota_name']
+      wlcgGroupName  = scopeRow['wlcg_group_name']
+      principalName  = scopeRow['principal_name']
+      scopeID        = int(scopeRow['scope_id'])
+      if not scopeID:
+        raise
+  except:
+      return ('400 Bad Request', 
+              'Failed to find scope %s in justIN database' % scopeName)
+
+  if not quotaName:
+      return ('403 Forbidden', 
+       'Scope %s has no named quota defined and cannot yet be used via justIN'
+       % scopeName)
+
+  # Check authorization to do this
+  if wlcgGroupName:
+    # Needs a WLCG group, check if the user has it
+    if wlcgGroupName not in user['wlcg_groups']:
+      return ('403 Forbidden', 
+              'You need to be in group %s to use scope %s' 
+              % (wlcgGroupName, scopeName))
+
+  elif principalName != user['user_name']:
+    # Needs user but name doesn't match
+    return ('403 Forbidden', 
+            'You need to be %s to use scope %s' 
+              % (principalName, scopeName))
+
+  return (scopeName, scopeID, scopeQuotaID)
+
 def createWorkflowUI(environ, user, cgiValues, pageNumber, pageLength):
+  user_scopes = _getUserScope({}, user)
+  user_scopes = ["DUMMY1", "DUMMY2", "DUMMY3"]
   form = CommandForm(
         fields=[
             FieldSet(
@@ -1137,12 +1199,10 @@ def createWorkflowUI(environ, user, cgiValues, pageNumber, pageLength):
                         validators=["required"],
                         
                     ),
-                    TextField(
-                        name="scope",
-                        label_name="scope",
-                        id="scope",
-                        placeholder="workflow scope",
-                        validators=["required alphanum"],
+                    Select(
+                      name='scope',
+                      label_name='Scope',
+                      options=user_scopes,
                     ),
                 ],
             ),
