@@ -1259,10 +1259,16 @@ def createWorkflowUI(environ, user, cgiValues, pageNumber, pageLength):
 
   form_html = form.render()
 
-  output = header(environ, user, "Create Workflow Form")
+  output = header(environ, user, "Create Workflow Form 2")
   output += form_html
+
+  # test code
+  output += f"<p>Test content: {user}</p>"
+
   output += footer()
   
+
+
   return output
 
 def listCampaigns(environ, user, cgiValues, pageNumber, pageLength):
