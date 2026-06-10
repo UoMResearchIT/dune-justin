@@ -252,6 +252,8 @@ a.button {
 <script type="text/javascript" 
  Xsrc="https://kozea.github.io/pygal.js/2.0.x/pygal-tooltips.min.js" 
  src="/pygal-tooltips.min.js"></script>
+<script type="text/javascript" src="/conditional_display.js"></script>
+<script type="text/javascript" src="/validators.js"></script>
 </head>
 <body>
 <div id="top_strip">
