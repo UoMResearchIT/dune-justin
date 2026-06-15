@@ -1228,9 +1228,6 @@ def createWorkflowUI(environ, user, cgiValues, pageNumber, pageLength):
   output = header(environ, user, "Create Workflow Form")
   output += form_html
 
-  # test code
-  output += f"<p>Test content: {user}</p>"
-
   output += footer()
   
 
