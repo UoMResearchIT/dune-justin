@@ -1126,68 +1126,32 @@ to visit.</p>
   return output
 
 
-def _getUserScope(jsonDict, user):
-  # TODO: need to find out the user scope instead of filter by the given scope. 
-  # need access to db to check the schema
-  if 'scope' in jsonDict and jsonDict['scope']:
-    scopeName = jsonDict['scope'].lower()
-  else:
-    scopeName = justin.defaultScopeName
+def _getUserScope(user):
+  # find out available scope for current user, based on their wlcg_groups and named_quotas  
 
-  if not justin.stringIsScope(scopeName):
-      return ('400 Bad Request', 
-              'Scope name can only be characters a-z 0-9 - _ .')
+  user_scope = []
+  wlgc_groups_value = []
+  # convert the wlcg_groups
+  for value in user['wlcg_groups']: 
+    wlgc_groups_value.append("'" + value.replace("\\", "\\\\").replace("'", "\\'") + "'")
+
+  sql = "SELECT scope_name,quota_name FROM wlcg_groups LEFT JOIN named_quotas ON named_quotas.wlcg_group_id=wlcg_groups.wlcg_group_id LEFT JOIN scopes ON scopes.quota_id=named_quotas.quota_id WHERE wlcg_group_name IN (%s)" % ",".join(wlgc_groups_value)
 
   try:
-      scopeRow = justin.select('SELECT scope_id,wlcg_group_name,quota_name,'
-                    'principal_name,scopes.quota_id '
-                    'FROM scopes '
-                    'LEFT JOIN named_quotas '
-                    'ON named_quotas.quota_id=scopes.quota_id '
-                    'LEFT JOIN users '
-                    'ON users.user_id=named_quotas.user_id '
-                    'LEFT JOIN principal_names '
-                    'ON principal_names.pn_id=users.main_pn_id '
-                    'LEFT JOIN wlcg_groups '
-                    'ON wlcg_groups.wlcg_group_id=named_quotas.wlcg_group_id '
-                    'WHERE scope_name="%s"' % scopeName, 
-                    justOne=True)
+      scopeRows = justin.select(sql)
 
-      scopeQuotaID   = int(scopeRow['quota_id'])
-      quotaName      = scopeRow['quota_name']
-      wlcgGroupName  = scopeRow['wlcg_group_name']
-      principalName  = scopeRow['principal_name']
-      scopeID        = int(scopeRow['scope_id'])
-      if not scopeID:
-        raise
+      for scopeRow in scopeRows:
+        if scopeRow['scope_name']:
+          user_scope.append(scopeRow['scope_name'])
   except:
       return ('400 Bad Request', 
-              'Failed to find scope %s in justIN database' % scopeName)
+              'Failed to find scope in justIN database')
 
-  if not quotaName:
-      return ('403 Forbidden', 
-       'Scope %s has no named quota defined and cannot yet be used via justIN'
-       % scopeName)
-
-  # Check authorization to do this
-  if wlcgGroupName:
-    # Needs a WLCG group, check if the user has it
-    if wlcgGroupName not in user['wlcg_groups']:
-      return ('403 Forbidden', 
-              'You need to be in group %s to use scope %s' 
-              % (wlcgGroupName, scopeName))
-
-  elif principalName != user['user_name']:
-    # Needs user but name doesn't match
-    return ('403 Forbidden', 
-            'You need to be %s to use scope %s' 
-              % (principalName, scopeName))
-
-  return (scopeName, scopeID, scopeQuotaID)
+  return user_scope
 
 def createWorkflowUI(environ, user, cgiValues, pageNumber, pageLength):
-  user_scopes = _getUserScope({}, user)
-  user_scopes = ["DUMMY1", "DUMMY2", "DUMMY3"]
+  user_scopes = _getUserScope(user)
+
   form = CommandForm(
         fields=[
             FieldSet(
@@ -1263,8 +1227,14 @@ def createWorkflowUI(environ, user, cgiValues, pageNumber, pageLength):
 
   output = header(environ, user, "Create Workflow Form")
   output += form_html
+
+  # test code
+  output += f"<p>Test content: {user}</p>"
+
   output += footer()
   
+
+
   return output
 
 def listCampaigns(environ, user, cgiValues, pageNumber, pageLength):
