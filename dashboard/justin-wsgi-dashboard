@@ -1221,6 +1221,12 @@ def createWorkflowUI(environ, user, cgiValues, pageNumber, pageLength):
             )
         ],
         cgi_method="create-workflow-ui",
+        request_method="POST",
+        hidden_inputs={
+          "action_name": "create_workflow_ui_submit",
+          "justin_code": user["justin_code"],
+          "next_uri": "/dashboard/?method=create-workflow-ui",
+        },
     )
 
   form_html = form.render()
