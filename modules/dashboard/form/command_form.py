@@ -97,7 +97,7 @@ class CommandForm:
     def render(self) -> str:
 
         form_html = f"<h1>{self.form_title}</h1>"
-        form_html += f"<form action='{self.action}' method='{self.request_method}', style='{self.css_style}'>"
+        form_html += f"<form action='{self.action}' method='{self.request_method}' style='{self.css_style}'>"
         form_html += f"<input type='hidden' name='method' value='{self.cgi_method}'>"
 
         for field in self._fields:
