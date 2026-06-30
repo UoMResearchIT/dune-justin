@@ -7107,7 +7107,8 @@ def postHandlers(startResponse, environ, user):
     'scope_condor_group'         : handlerScopeCondorGroup,
     'workflow_campaign'          : handlerWorkflowCampaign,
     'workflow_description'       : handlerWorkflowDescription,
-    'campaign_description'       : handlerCampaignDescription
+    'campaign_description'       : handlerCampaignDescription,
+    "create_workflow_ui_submit"  : handlerCreateWorkflowUISubmit,
                }
 
   if user is None:
