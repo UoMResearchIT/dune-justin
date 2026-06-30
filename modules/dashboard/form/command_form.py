@@ -12,12 +12,14 @@ class CommandForm:
         form_title: str = "Command Form",
         action: str = "/dashboard/",
         request_method: str = "GET",
+        hidden_inputs = None,
     ):
         self._fields: list[FieldBase] = fields
         self.form_title: str = form_title
         self.action: str = action
         self.cgi_method: str = cgi_method
         self.request_method: str = request_method
+        self.hidden_input = hidden_input or {}
         self.css_style = (
             "display: flex; flex-direction: column; gap: 10px; align-items: flex-start;"
         )
@@ -100,6 +102,9 @@ class CommandForm:
         form_html += f"<form action='{self.action}' method='{self.request_method}' style='{self.css_style}'>"
         form_html += f"<input type='hidden' name='method' value='{self.cgi_method}'>"
 
+        for key, value in self.hidden_inputs.items():
+            form_html += f"<input type='hidden' name='{key}' value='{value}'>"
+        
         for field in self._fields:
             form_html += field.render()
 
