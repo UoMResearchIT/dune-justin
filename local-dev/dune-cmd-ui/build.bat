@@ -1,0 +1,5 @@
+@echo off
+cd /d %~dp0
+python main.py
+start chrome "%cd%\index.html"
+pause

@@ -1,5 +1,5 @@
 from collections import defaultdict
-from .components.filterForm import Option
+from .fields.select import Option
 
 def extract_rows_unique_value(rows: list[dict]) -> dict[str, list]:
     if not isinstance(rows, list):
