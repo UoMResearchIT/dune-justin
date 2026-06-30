@@ -1240,6 +1240,10 @@ def createWorkflowUI(environ, user, cgiValues, pageNumber, pageLength):
 
   return output
 
+def handlerCreateWorkflowUISubmit(cgiValues, user):
+  scope = cgiValues.get("scope", "")
+  return ("302 Moved", "")
+
 def listCampaigns(environ, user, cgiValues, pageNumber, pageLength):
 
   urlTemplate = '/dashboard/?method=list-campaigns&page_number=%d&page_length=%d'
